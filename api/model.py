@@ -1,0 +1,80 @@
+from typing import Optional
+from langchain.memory import ConversationBufferMemory
+from langchain.llms import HuggingFaceHub
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.prompts import PromptTemplate
+from langchain.chains import RetrievalQA, LLMChain
+from langchain.document_loaders import DirectoryLoader, TextLoader, WebBaseLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+
+class RAGModel:
+
+    def __init__(self, repo_id="google/flan-t5-large",
+                 model_kwargs={"temperature": 0.01, "max_length": 512}):
+
+        self.llm = None
+        self.repo_id = repo_id
+        self.db = None
+        self.model_kwargs = model_kwargs
+
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'}
+        )
+        self.update_llm(repo_id, model_kwargs)
+
+    def update_llm(self, repo_id: Optional[str] = None, model_kwargs: Optional[dict] = None):
+        if repo_id:
+            self.repo_id = repo_id
+
+        if model_kwargs:
+            self.model_kwargs.update(model_kwargs)
+
+        self.llm = HuggingFaceHub(repo_id=self.repo_id,
+                                  model_kwargs=self.model_kwargs)
+        return self.llm
+
+    def load_url(self, url: str):
+
+        loader = WebBaseLoader(url)
+
+        # interpret information in the documents
+        documents = loader.load()
+        splitter = RecursiveCharacterTextSplitter(chunk_size=500,
+                                                  chunk_overlap=50)
+        splits = splitter.split_documents(documents)
+
+        # create and save the local database
+        self.db = FAISS.from_documents(splits, self.embeddings)
+
+        return self.db
+
+    def retrieve_response(self, question: str, template: Optional[str] = None):
+        if not template:
+            template = """Use the following pieces of information to answer the user's question.
+            If you don't know the answer, just say that you don't know, don't try to make up an answer.
+            Context: {context}
+            Question: {question}
+            Only return the helpful answer below and nothing else.
+            Helpful answer:
+            """
+
+        if not self.db:
+            return "Should provide the url first!"
+
+        retriever = self.db.as_retriever(search_kwargs={"k": 4, "fetch_k": 4})
+
+        prompt = PromptTemplate(template=template,
+                                input_variables=['context', 'question'])
+
+        qa_llm = RetrievalQA.from_chain_type(llm=self.llm,
+                                             chain_type='stuff',
+                                             retriever=retriever,
+                                             return_source_documents=True,
+                                             chain_type_kwargs={'prompt': prompt})
+
+        output = qa_llm({'query': question})
+
+        return output['result']

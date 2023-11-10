@@ -1,0 +1,6 @@
+flask
+faiss-gpu
+langchain
+huggingface
+transformers
+sentence_transformers
