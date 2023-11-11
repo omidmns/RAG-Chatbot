@@ -1,18 +1,17 @@
 from typing import Optional
-from langchain.memory import ConversationBufferMemory
 from langchain.llms import HuggingFaceHub
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA, LLMChain
-from langchain.document_loaders import DirectoryLoader, TextLoader, WebBaseLoader
+from langchain.chains import RetrievalQA
+from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 class RAGModel:
 
-    def __init__(self, repo_id="google/flan-t5-large",
-                 model_kwargs={"temperature": 0.01, "max_length": 512}):
+    def __init__(self, repo_id: str = "google/flan-t5-large",
+                 model_kwargs: dict = {"temperature": 0.01, "max_length": 512}):
 
         self.llm = None
         self.repo_id = repo_id
