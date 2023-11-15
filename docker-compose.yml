@@ -19,6 +19,16 @@ services:
       - api_network
     privileged: true
     runtime: nvidia
+  nginx:
+    image: "nginx"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on:
+      - app
 networks:
   api_network:
     driver: bridge
