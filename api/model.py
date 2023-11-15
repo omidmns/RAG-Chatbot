@@ -10,9 +10,12 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class RAGModel:
 
-    def __init__(self, repo_id: str = "google/flan-t5-large",
-                 model_kwargs: dict = {"temperature": 0.01, "max_length": 512}):
+    def __init__(self,
+                 repo_id: str = "google/flan-t5-large",
+                 model_kwargs: dict = {"temperature": 0.01, "max_length": 512},
+                 ):
 
+        self.huggingfacehub_api_token = None
         self.llm = None
         self.repo_id = repo_id
         self.db = None
@@ -22,16 +25,24 @@ class RAGModel:
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
-        self.update_llm(repo_id, model_kwargs)
 
-    def update_llm(self, repo_id: Optional[str] = None, model_kwargs: Optional[dict] = None):
+    def update_llm(self,
+                   repo_id: Optional[str] = None,
+                   model_kwargs: Optional[dict] = None,
+                   huggingfacehub_api_token: Optional[str] = None
+                   ):
+
         if repo_id:
             self.repo_id = repo_id
 
         if model_kwargs:
             self.model_kwargs.update(model_kwargs)
 
+        if huggingfacehub_api_token:
+            self.huggingfacehub_api_token = huggingfacehub_api_token
+
         self.llm = HuggingFaceHub(repo_id=self.repo_id,
+                                  huggingfacehub_api_token=self.huggingfacehub_api_token,
                                   model_kwargs=self.model_kwargs)
         return self.llm
 

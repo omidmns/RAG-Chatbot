@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from model import RAGModel
+import os
 
 app = Flask(__name__)
 model = RAGModel()
@@ -7,11 +8,16 @@ model = RAGModel()
 
 @app.route("/config", methods=["POST"])
 def config():
+
+    huggingfacehub_api_token = request.json.get('huggingfacehub_api_token', 0)
     url = request.json.get('url', 0)
     repo_id = request.json.get('repo_id', 0)
     model_temp = request.json.get('temperature', 0)
     model_top_k = request.json.get('top_k', 0)
     model_top_p = request.json.get('top_p', 0)
+
+    if huggingfacehub_api_token:
+        model_updated = model.update_llm(huggingfacehub_api_token=huggingfacehub_api_token)
 
     if url:
         model_updated = model.load_url(url)

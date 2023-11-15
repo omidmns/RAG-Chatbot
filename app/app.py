@@ -27,6 +27,18 @@ def get_answer(question):
 
 
 with st.sidebar:
+    huggingfacehub_api_token = st.text_input("huggingfacehub_api_token", type='password')
+    token_button = st.button("submit token")
+
+if not huggingfacehub_api_token:
+    st.info("Please provide huggingfacehub_api_token!")
+    st.stop()
+
+if token_button:
+    if huggingfacehub_api_token:
+        update_model({'huggingfacehub_api_token': f'{huggingfacehub_api_token}'})
+
+with st.sidebar:
     data_url = st.text_input("Webpage url")
     url_button = st.button("submit url")
 

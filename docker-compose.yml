@@ -6,7 +6,6 @@ services:
       - ./app:/app/
     ports:
       - "8501:8501"
-    command: streamlit run app.py
     networks:
       - web_network
       - api_network
@@ -14,8 +13,6 @@ services:
     build: ./api
     volumes:
       - ./api:/app
-    env_file:
-      - .env
     ports:
       - "5000:5000"
     networks:
