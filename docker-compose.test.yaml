@@ -1,0 +1,30 @@
+version: '3'
+services:
+  app:
+    build: ./app
+    image: rag-chatbot_app:test
+    volumes:
+      - ./app:/home/app
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    networks:
+      - api_network
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    image: rag-chatbot_api:test
+    volumes:
+      - ./api:/home/api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - api_network
+    privileged: true
+networks:
+  api_network:
+    driver: bridge
