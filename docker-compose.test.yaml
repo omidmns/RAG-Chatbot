@@ -25,6 +25,17 @@ services:
     networks:
       - api_network
     privileged: true
+  nginx:
+    build: ./nginx
+    image: rag-chatbot_nginx:test
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - api_network
+    depends_on:
+      - app
 networks:
   api_network:
     driver: bridge
