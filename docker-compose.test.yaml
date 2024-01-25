@@ -14,7 +14,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./api/Dockerfile
+      dockerfile: ./api/Dockerfile.test
     image: rag-chatbot_api:test
     volumes:
       - ./api:/home/api
