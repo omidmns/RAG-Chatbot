@@ -1,0 +1,35 @@
+version: '3'
+services:
+  app:
+    build: ./app
+    image: ${DOCKER_REPO_ID}/rag-chatbot_app:${RELEASE_VERSION}
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    networks:
+      - api_network
+  api:
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
+    image: ${DOCKER_REPO_ID}/rag-chatbot_api:${RELEASE_VERSION}
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - api_network
+    privileged: true
+  nginx:
+    build: ./nginx
+    image: ${DOCKER_REPO_ID}/rag-chatbot_nginx:${RELEASE_VERSION}
+    ports:
+      - "8080:8080"
+    networks:
+      - api_network
+    depends_on:
+      - app
+networks:
+  api_network:
+    driver: bridge
